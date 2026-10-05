@@ -1,5 +1,14 @@
 # Validation
 
+## Wider layout and system typography
+
+Checked on 5 October 2026:
+
+- Desktop canvas widened from 1220px to 1440px.
+- Apple-first system font stack applied to the interface and summary numbers.
+- Title placed in its own row above the image; its bottom edge is above the image top at desktop and 390px mobile sizes.
+- Neither checked viewport had horizontal document overflow. The title decoration was removed to keep the mobile heading on one line.
+
 ## v0.2 design update
 
 Checked on 5 October 2026:

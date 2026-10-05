@@ -2,6 +2,8 @@
 
 The supplied visual reference uses charcoal product panels, fine ivory outlines, large typography, and a softly lit metallic object. LeakLens adapts that direction into an actual developer tool: a framed introduction with immediate file access, followed by a working analyzer and a compact command reference.
 
+The interface uses an Apple-first system font stack: San Francisco on Apple devices and the native system font elsewhere. The wider canvas places the complete LeakLens title in its own row above the memory sculpture.
+
 The sample report loads automatically and is explicitly marked as an example. Opening a log or choosing the example moves the user to the analysis. System feedback stays visible when the analyzer is in view. Reduced-motion preferences disable the introductory image animation and smooth scrolling.
 
 ## Original visual asset
