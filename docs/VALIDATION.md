@@ -1,4 +1,18 @@
-# v0.1 validation
+# Validation
+
+## v0.2 design update
+
+Checked on 5 October 2026:
+
+- All 20 parser tests passed after the interface redesign; application JavaScript passed its syntax check.
+- The example loads on arrival with 3 grouped issues and 64 bytes definitely lost.
+- Browser file selection loaded the real `demo.log` through the new upload control and displayed the local-file confirmation.
+- Selecting the invalid read and clicking its primary stack frame opened the original evidence and highlighted log line 16.
+- Desktop and 390px mobile layouts were visually checked without horizontal document overflow. The temporary browser viewport was restored afterward.
+- No browser console errors were observed during the checked flows.
+- The updated interface is pictured in `preview.jpg`; artwork provenance is documented in `DESIGN.md`.
+
+## v0.1
 
 Checked on 5 October 2026:
 

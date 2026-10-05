@@ -13,7 +13,7 @@ const node = (tag, className, text) => {
   if (text !== undefined) result.textContent = text;
   return result;
 };
-const colors = { definite: '#ff8d98', indirect: '#d89fce', possible: '#f7c575', reachable: '#7dc7cf' };
+const colors = { definite: '#edb698', indirect: '#c4b6aa', possible: '#dbcb9b', reachable: '#a8c5bf' };
 
 function notice(message) { $('notice').textContent = message; }
 function openReport(text, name, example = false) {
@@ -27,6 +27,7 @@ function openReport(text, name, example = false) {
   $('empty-state').hidden = true;
   $('report-content').hidden = false;
   $('raw-section').hidden = false;
+  document.body.classList.add('has-report');
   $('stat-groups').textContent = fmt.format(next.groups.length);
   $('stat-records').textContent = `${fmt.format(next.recordCount)} detail records in this log`;
   $('stat-errors').textContent = next.errorCount === null ? 'Unknown' : fmt.format(next.errorCount);
@@ -38,7 +39,7 @@ function openReport(text, name, example = false) {
   renderMemory(next);
   renderRaw(next);
   renderIssues(next);
-  notice(example ? 'Example loaded. Open your own log whenever you’re ready.' : 'Analysis complete. Your file stays in this browser tab.');
+  notice(example ? 'Example report loaded.' : 'Analysis complete. Your file stays in this browser tab.');
   return { groups: next.groups.length, records: next.recordCount, errors: next.errorCount, warnings: next.warnings };
 }
 
@@ -168,20 +169,31 @@ async function readFile(file) {
     if (file.size > LIMIT) throw new Error('This file is too large. Choose a text log smaller than 5 MiB.');
     notice('Reading your log…');
     const text = await file.text();
-    if (request === renderRequest) openReport(text, file.name);
+    if (request === renderRequest) {
+      openReport(text, file.name);
+      $('analyzer').scrollIntoView({ block: 'start', behavior: 'auto' });
+    }
   } catch (error) { if (request === renderRequest) notice(error.message); }
 }
 
-async function loadDemo() {
+async function loadDemo(event) {
   const request = ++renderRequest;
   try {
-    notice('Loading the example…');
+    if (event) notice('Loading the example…');
     const response = await fetch('examples/demo.log');
     if (!response.ok) throw new Error('The example could not be loaded. You can still open your own log.');
     const text = await response.text();
-    if (request === renderRequest) openReport(text, 'demo.log', true);
+    if (request === renderRequest) {
+      openReport(text, 'demo.log', true);
+      if (!event) notice('');
+      if (event) $('analyzer').scrollIntoView({ block: 'start', behavior: 'auto' });
+    }
   } catch (error) { if (request === renderRequest) notice(error.message); }
 }
+
+// Start with a clearly marked real example so visitors can inspect the tool.
+// Loading it never moves the page; an explicit action brings the report into view.
+void loadDemo();
 
 $('log-file').addEventListener('change', (event) => { void readFile(event.target.files[0]); event.target.value = ''; });
 $('demo-button').addEventListener('click', loadDemo);

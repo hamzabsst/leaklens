@@ -1,6 +1,6 @@
 # Understand LeakLens
 
-Start the app and choose **Explore the example**. You should see three issues and 64 bytes definitely lost.
+Start the app and choose **Or explore the example** to jump to the sample report. You should see three issues and 64 bytes definitely lost.
 
 ## 1. Understand the bugs before the web app
 

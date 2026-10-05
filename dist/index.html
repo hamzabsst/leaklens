@@ -3,54 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Read Valgrind Memcheck logs as grouped memory reports. Your logs stay in your browser.">
-  <title>LeakLens — memory reports, made readable</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%238d82ff'/%3E%3Cpath d='M8 8v16h8M18 8v16h7' fill='none' stroke='%23101621' stroke-width='3'/%3E%3C/svg%3E">
+  <meta name="theme-color" content="#1e2931">
+  <meta name="description" content="A clearer look at memory. Read Valgrind logs as grouped issues, trace the evidence, and find your next fix. Your logs stay in your browser.">
+  <title>LeakLens — a clearer look at memory</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%231e2931'/%3E%3Cpath d='M9 8v16h7M19 8v16h6' fill='none' stroke='%23f4f2ed' stroke-width='3'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="styles.css">
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="./" aria-label="LeakLens home"><span class="mark" aria-hidden="true">LL</span>LeakLens<span class="version">v0.1</span></a>
-    <span class="privacy">Local analysis · logs stay in your browser</span>
-    <a class="manual" href="https://valgrind.org/docs/manual/mc-manual.html" target="_blank" rel="noopener noreferrer">Memcheck docs</a>
-  </header>
-  <div class="shell">
-    <aside class="sidebar">
-      <div class="eyebrow">WORKSPACE</div>
-      <h1>Read the report.<br>Find the problem.</h1>
-      <p class="muted intro">Turn a Memcheck log into memory issues you can investigate.</p>
-      <label class="dropzone" id="dropzone" for="log-file">
-        <span class="upload-symbol" aria-hidden="true">+</span>
-        <strong>Open a Valgrind log</strong>
-        <span>Choose a file or drop it here</span>
-        <small>Plain text · 5 MiB / 20,000 lines max</small>
-      </label>
-      <input id="log-file" type="file" accept=".log,.txt,text/plain" class="file-input">
-      <div id="notice" role="status" aria-live="polite"></div>
-      <div class="sample-section">
-        <div class="eyebrow">TRY AN EXAMPLE</div>
-        <button class="sample-button" id="demo-button"><span class="sample-icon" aria-hidden="true">{ }</span><span><strong>A buggy C program</strong><small>Leaks & invalid memory access</small></span></button>
-        <a class="source-link" href="examples/demo.c" target="_blank" rel="noopener">View the demo source</a>
+  <div class="page-wrap">
+    <section class="hero frame" aria-labelledby="hero-title">
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="LeakLens home"><span class="brand-icon" aria-hidden="true">ll</span>leaklens<span class="brand-star" aria-hidden="true">°</span></a>
+        <nav aria-label="Main navigation">
+          <a href="#analyzer">Analyzer</a>
+          <a href="https://github.com/hamzabsst/leaklens" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="https://valgrind.org/docs/manual/mc-manual.html" target="_blank" rel="noopener noreferrer">Docs</a>
+        </nav>
+        <span class="edition">MEMCHECK / 01</span>
+      </header>
+      <div class="hero-composition">
+        <div class="hero-title-wrap">
+          <p class="eyebrow">A LITTLE CLARITY FOR YOUR C / C++</p>
+          <h1 id="hero-title">LeakLens<span aria-hidden="true">°</span></h1>
+        </div>
+        <img class="hero-object" src="assets/memory-sculpture.webp" alt="" width="720" height="960" fetchpriority="high">
+        <div class="hero-action">
+          <span class="section-number">01 / INSPECT</span>
+          <h2>A clearer look<br>at memory.</h2>
+          <p>Your Valgrind log, untangled.<br>Find the issue. Follow the stack.<br>Get back to building.</p>
+          <label class="primary-button open-log" id="dropzone" for="log-file">
+            Open a log <span aria-hidden="true">+</span>
+            <input id="log-file" type="file" accept=".log,.txt,text/plain" class="file-input">
+          </label>
+          <button id="empty-demo" class="text-button">Or explore the example</button>
+          <span class="file-spec">Drop a file here · .log / .txt<br>5 MiB / 20,000 lines max</span>
+          <div id="notice" role="status" aria-live="polite"></div>
+        </div>
       </div>
-      <div class="run-help">
-        <div class="eyebrow">GENERATE YOUR LOG</div>
-        <p>Compile with debug symbols, then run:</p>
-        <code>valgrind --leak-check=full<br>--show-leak-kinds=all<br>--track-origins=yes<br>--log-file=report.log ./app</code>
-        <button class="quiet-button" id="copy-command">Copy command</button>
+      <div class="hero-bottom">
+        <div class="caption"><span class="caption-rule" aria-hidden="true"></span><p>Find the leak.<br>Keep the context.</p></div>
+        <div class="object-caption"><span class="tiny-square" aria-hidden="true"></span>Memory, under a different lens.</div>
+        <span class="privacy">Local analysis.<br>Your logs stay in your browser.</span>
       </div>
-      <p class="sidebar-foot">Text logs only. No account, installation, or uploads to a server.</p>
-    </aside>
-    <main>
+    </section>
+
+    <main class="analyzer frame" id="analyzer">
+      <div class="workspace-heading">
+        <div><p class="eyebrow">02 / THE ANALYZER</p><h2>Less noise.<br>More understanding.</h2></div>
+        <div class="workspace-tools"><button class="quiet-button" id="demo-button">Load example</button><label class="quiet-button" for="log-file">Open another log</label></div>
+      </div>
       <section class="report-head">
-        <div><div class="eyebrow">MEMORY REPORT</div><h2 id="report-name">Your analysis starts here</h2><p id="report-command" class="muted command">Open a log or explore the example.</p></div>
+        <div class="report-file"><span class="file-glyph" aria-hidden="true">{ }</span><div><h3 id="report-name">No log loaded</h3><p id="report-command" class="muted command">Open a log or load the example.</p></div></div>
         <span id="report-badge" class="badge">Ready</span>
       </section>
-      <div id="empty-state" class="empty-state"><span class="empty-icon" aria-hidden="true">[ &nbsp; ]</span><h3>A clearer view of your memory errors.</h3><p>Open a log to see grouped reports, stack traces, and the original evidence in one place.</p><button id="empty-demo" class="primary-button">Explore the example</button></div>
+      <div id="empty-state" class="empty-state"><span class="eyebrow">YOUR WORKSPACE IS READY</span><h3>The next fix starts with a log.</h3><p>Open a Memcheck text log above, or choose Load example to see three real memory issues.</p></div>
       <div id="report-content" hidden>
         <section class="stats" aria-label="Report summary">
           <div class="stat"><span>Grouped issues</span><strong id="stat-groups">—</strong><small id="stat-records">—</small></div>
-          <div class="stat"><span>Valgrind error count</span><strong id="stat-errors">—</strong><small>From ERROR SUMMARY</small></div>
+          <div class="stat"><span>Valgrind errors</span><strong id="stat-errors">—</strong><small>From ERROR SUMMARY</small></div>
           <div class="stat"><span>Definitely lost</span><strong id="stat-lost">—</strong><small>From LEAK SUMMARY</small></div>
           <div class="stat"><span>Still reachable</span><strong id="stat-reachable">—</strong><small>Not necessarily a leak</small></div>
         </section>
@@ -60,18 +71,25 @@
           <div id="memory-legend" class="memory-legend"></div>
         </section>
         <div id="warnings" class="warnings" hidden></div>
-        <div class="issues-heading"><h3>Issues to investigate <span id="issue-count" class="count"></span></h3><span class="muted">Grouped by type & primary stack</span></div>
+        <div class="issues-heading"><h3>The details <span id="issue-count" class="count"></span></h3><span class="muted">Grouped by type & primary stack</span></div>
         <div id="clean-state" class="clean-state" hidden></div>
         <section id="issue-workspace" class="issue-workspace" aria-label="Issues and evidence">
           <div id="issue-list" class="issue-list" aria-label="Choose an issue"></div>
           <article id="issue-detail" class="issue-detail" aria-live="polite"></article>
         </section>
-        <p class="report-foot">Log records are grouped entries, not runtime occurrence counts. Valgrind may suppress repeated errors; its summary is the source for the total.</p>
+        <p class="report-foot">Log records are printed entries, not runtime occurrence counts. Valgrind may suppress repeats; its summary provides the total.</p>
       </div>
       <section id="raw-section" class="raw-section" hidden>
-        <details id="raw-details"><summary>Original log <span id="raw-line-count" class="muted"></span></summary><div id="raw-log" class="raw-log" tabindex="0" aria-label="Original log with line numbers"></div></details>
+        <details id="raw-details"><summary>Original evidence <span id="raw-line-count" class="muted"></span><span class="disclosure-icon" aria-hidden="true">+</span></summary><div id="raw-log" class="raw-log" tabindex="0" aria-label="Original log with line numbers"></div></details>
       </section>
+      <div class="analyzer-bottom"><span>Read locally. Investigate precisely.</span><a href="examples/demo.c" target="_blank" rel="noopener">View the example C source</a></div>
     </main>
+
+    <section class="run-help" aria-labelledby="run-title">
+      <div><p class="eyebrow">03 / BRING YOUR OWN BUG</p><h2 id="run-title">One command.<br>A fresh perspective.</h2><p>Compile with <code>-g</code>, run Memcheck,<br>then open your report here.</p></div>
+      <div class="command-card"><div class="command-card-top"><span class="mono">TERMINAL</span><button class="quiet-button" id="copy-command">Copy command</button></div><code>valgrind --leak-check=full<br>  --show-leak-kinds=all<br>  --track-origins=yes<br>  --log-file=report.log ./app</code></div>
+    </section>
+    <footer class="page-footer"><a class="brand footer-brand" href="#hero-title">leaklens<span class="brand-star" aria-hidden="true">°</span></a><span>Built by Hamza Boussetta · v0.2</span><a href="https://github.com/hamzabsst/leaklens" target="_blank" rel="noopener noreferrer">Source & documentation</a></footer>
   </div>
 </body>
 </html>

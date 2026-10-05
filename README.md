@@ -24,7 +24,7 @@ Python 3 is sufficient; there are no application dependencies to install.
 python3 -m http.server 4173 --directory dist --bind 127.0.0.1
 ```
 
-Open <http://127.0.0.1:4173> and choose **Explore the example**, or open a log of your own. ES modules require an HTTP server; opening `index.html` directly from the filesystem will not work reliably.
+Open <http://127.0.0.1:4173>. A clearly marked example report loads automatically; choose **Or explore the example** to jump to it, or open a log of your own. ES modules require an HTTP server; opening `index.html` directly from the filesystem will not work reliably.
 
 ## Generate a log
 
@@ -63,6 +63,7 @@ Alternatively run `node --test tests/parser.test.js`. Tests cover repeat groupin
 dist/
   index.html             Accessible application shell
   styles.css             Responsive workspace layout
+  assets/                Original decorative memory-chip artwork
   js/parser.js           Pure parsing and grouping logic
   js/app.js              File reading, state, rendering, and interactions
   examples/demo.c        Deliberately buggy program
@@ -94,4 +95,4 @@ Files are read through the browser File API. Parsing and rendering run locally. 
 
 ## License
 
-MIT. Built as a small developer tool with a testable parser and explicit uncertainty handling.
+MIT. Built as a small developer tool with a testable parser and explicit uncertainty handling. See [the design notes](docs/DESIGN.md) for the visual direction and generated artwork provenance.
