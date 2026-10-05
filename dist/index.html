@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Read Valgrind Memcheck logs as grouped memory reports. Your logs stay in your browser.">
+  <title>LeakLens — memory reports, made readable</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%238d82ff'/%3E%3Cpath d='M8 8v16h8M18 8v16h7' fill='none' stroke='%23101621' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="LeakLens home"><span class="mark" aria-hidden="true">LL</span>LeakLens<span class="version">v0.1</span></a>
+    <span class="privacy">Local analysis · logs stay in your browser</span>
+    <a class="manual" href="https://valgrind.org/docs/manual/mc-manual.html" target="_blank" rel="noopener noreferrer">Memcheck docs</a>
+  </header>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="eyebrow">WORKSPACE</div>
+      <h1>Read the report.<br>Find the problem.</h1>
+      <p class="muted intro">Turn a Memcheck log into memory issues you can investigate.</p>
+      <label class="dropzone" id="dropzone" for="log-file">
+        <span class="upload-symbol" aria-hidden="true">+</span>
+        <strong>Open a Valgrind log</strong>
+        <span>Choose a file or drop it here</span>
+        <small>Plain text · 5 MiB / 20,000 lines max</small>
+      </label>
+      <input id="log-file" type="file" accept=".log,.txt,text/plain" class="file-input">
+      <div id="notice" role="status" aria-live="polite"></div>
+      <div class="sample-section">
+        <div class="eyebrow">TRY AN EXAMPLE</div>
+        <button class="sample-button" id="demo-button"><span class="sample-icon" aria-hidden="true">{ }</span><span><strong>A buggy C program</strong><small>Leaks & invalid memory access</small></span></button>
+        <a class="source-link" href="examples/demo.c" target="_blank" rel="noopener">View the demo source</a>
+      </div>
+      <div class="run-help">
+        <div class="eyebrow">GENERATE YOUR LOG</div>
+        <p>Compile with debug symbols, then run:</p>
+        <code>valgrind --leak-check=full<br>--show-leak-kinds=all<br>--track-origins=yes<br>--log-file=report.log ./app</code>
+        <button class="quiet-button" id="copy-command">Copy command</button>
+      </div>
+      <p class="sidebar-foot">Text logs only. No account, installation, or uploads to a server.</p>
+    </aside>
+    <main>
+      <section class="report-head">
+        <div><div class="eyebrow">MEMORY REPORT</div><h2 id="report-name">Your analysis starts here</h2><p id="report-command" class="muted command">Open a log or explore the example.</p></div>
+        <span id="report-badge" class="badge">Ready</span>
+      </section>
+      <div id="empty-state" class="empty-state"><span class="empty-icon" aria-hidden="true">[ &nbsp; ]</span><h3>A clearer view of your memory errors.</h3><p>Open a log to see grouped reports, stack traces, and the original evidence in one place.</p><button id="empty-demo" class="primary-button">Explore the example</button></div>
+      <div id="report-content" hidden>
+        <section class="stats" aria-label="Report summary">
+          <div class="stat"><span>Grouped issues</span><strong id="stat-groups">—</strong><small id="stat-records">—</small></div>
+          <div class="stat"><span>Valgrind error count</span><strong id="stat-errors">—</strong><small>From ERROR SUMMARY</small></div>
+          <div class="stat"><span>Definitely lost</span><strong id="stat-lost">—</strong><small>From LEAK SUMMARY</small></div>
+          <div class="stat"><span>Still reachable</span><strong id="stat-reachable">—</strong><small>Not necessarily a leak</small></div>
+        </section>
+        <section class="memory-strip" aria-label="Memory at exit">
+          <div class="memory-heading"><span class="eyebrow">MEMORY AT EXIT</span><span id="memory-total" class="mono">—</span></div>
+          <div id="memory-bar" class="memory-bar" aria-hidden="true"></div>
+          <div id="memory-legend" class="memory-legend"></div>
+        </section>
+        <div id="warnings" class="warnings" hidden></div>
+        <div class="issues-heading"><h3>Issues to investigate <span id="issue-count" class="count"></span></h3><span class="muted">Grouped by type & primary stack</span></div>
+        <div id="clean-state" class="clean-state" hidden></div>
+        <section id="issue-workspace" class="issue-workspace" aria-label="Issues and evidence">
+          <div id="issue-list" class="issue-list" aria-label="Choose an issue"></div>
+          <article id="issue-detail" class="issue-detail" aria-live="polite"></article>
+        </section>
+        <p class="report-foot">Log records are grouped entries, not runtime occurrence counts. Valgrind may suppress repeated errors; its summary is the source for the total.</p>
+      </div>
+      <section id="raw-section" class="raw-section" hidden>
+        <details id="raw-details"><summary>Original log <span id="raw-line-count" class="muted"></span></summary><div id="raw-log" class="raw-log" tabindex="0" aria-label="Original log with line numbers"></div></details>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
