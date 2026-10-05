@@ -2,6 +2,8 @@
 
 A local-first visual reader for Valgrind Memcheck text logs. Open a log, inspect grouped memory reports, and click stack frames to find the corresponding lines in the original evidence.
 
+**[Try the live demo](https://leaklens-seven.vercel.app)**
+
 ![LeakLens demo](docs/preview.jpg)
 
 ## What it does
