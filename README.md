@@ -15,6 +15,9 @@ A local-first visual reader for Valgrind Memcheck text logs. Open a log, inspect
 - Explains invalid reads/writes, uninitialized values, invalid/mismatched frees, overlapping buffers, suspicious allocations, system-call parameters, and the four main leak categories.
 - Preserves allocation/free/origin evidence in the original log without mixing it into the primary stack.
 - Includes a real Memcheck log from a deliberately buggy C program.
+- Compares two runs locally by error kind and up to five application stack frames, ignoring addresses, PIDs, access sizes, and byte counts.
+- Shows Fixed, New, and Still leaking groups, leak-summary deltas, and the change in printed invalid-read/write records.
+- Self-hosts Geist and Geist Mono; no font service is contacted.
 
 ## Run locally
 
@@ -25,6 +28,16 @@ python3 -m http.server 4173 --directory dist --bind 127.0.0.1
 ```
 
 Open <http://127.0.0.1:4173>. A clearly marked example report loads automatically; choose **Or explore the example** to jump to it, or open a log of your own. ES modules require an HTTP server; opening `index.html` directly from the filesystem will not work reliably.
+
+## Compare runs
+
+![Run comparison](docs/comparison.jpg)
+
+After opening a log, select **Compare with another log** or drop a second `.log` / `.txt` file on that control. The current report is before; the selected file is after. **Clear comparison** restores the normal report. Each group expands with the keyboard or a click to show its before/after stacks.
+
+For a one-click demo, choose **Compare example runs** on the initial example report. It compares the real before log with a clearly labelled synthetic after fixture: **2 Fixed, 1 New, 1 Still leaking**, 64 B → 32 B definitely lost, and 2 → 1 printed invalid-read/write records. `demo-after.log` illustrates the diff; it is not output from the checked-in C demo.
+
+Matching uses the top five application frames (function + file:line), or the available shorter stack. Known system and Valgrind frames are skipped when application frames are available; symbol names are used when source locations are unavailable. Identical signatures across processes are combined for comparison. Different source line numbers count as different identities. Stackless records cannot be matched and carry a warning. Presence in a log does not prove a bug was fixed: truncated logs and suppressed details can omit errors. Missing leak totals remain unknown.
 
 ## Generate a log
 
@@ -49,13 +62,14 @@ Valgrind must be available to generate new logs. Reading existing logs does not 
 
 ## Test
 
-Node.js is required only for the parser tests:
+Node.js is required only for tests and static build validation:
 
 ```sh
 npm test
+npm run build
 ```
 
-Alternatively run `node --test tests/parser.test.js`. Tests cover repeat grouping, different callers, allocation/origin stacks, multiple processes, incomplete logs, clean runs, leak categories, numeric separators, unsupported inputs, source columns, size limits, and the real demo fixture.
+Alternatively run `node --test tests/*.test.js`. The 33 tests cover repeat grouping, different callers, allocation/origin stacks, multiple processes, incomplete logs, clean runs, leak categories, numeric separators, unsupported inputs, source columns, size limits, the real demo fixture, signature matching, cross-process merges, fixed/new/persistent sets, unknown totals, and positive/negative deltas. `npm run build` checks deployable JavaScript syntax, module imports, static assets, and WOFF2 signatures without a bundler.
 
 ## Structure
 
@@ -63,16 +77,20 @@ Alternatively run `node --test tests/parser.test.js`. Tests cover repeat groupin
 dist/
   index.html             Accessible application shell
   styles.css             Responsive workspace layout
-  assets/                Original decorative memory-chip artwork
+  assets/                Memory-chip artwork and self-hosted fonts
   js/parser.js           Pure parsing and grouping logic
   js/app.js              File reading, state, rendering, and interactions
+  js/compare.js          Pure signature matching, diff metrics, byte limits
   examples/demo.c        Deliberately buggy program
   examples/demo.log      Real Memcheck output
+  examples/demo-after.log Synthetic after-run comparison fixture
 tests/parser.test.js     Parser tests with Node's built-in runner
+tests/compare.test.js    Signature and diff tests
+scripts/check-build.js  Dependency-free static build validation
 docs/WALKTHROUGH.md      Guided explanation and a first learning exercise
 ```
 
-`dist` is the actual application source and can be served on any static host. There is no generated build step. No source credentials are stored in this repository.
+`dist` is the actual application source and can be served on any static host. There is no generated build step; the build command validates the static source in place. No source credentials are stored in this repository.
 
 ## Deploy on Vercel
 
@@ -80,7 +98,7 @@ Import this GitHub repository, select **Other** as the framework, and use `dist`
 
 ## Scope and limitations
 
-- English plain-text Memcheck logs with standard `==PID==` or `--PID--` prefixes. XML and other Valgrind tools are outside v0.1.
+- English plain-text Memcheck logs with standard `==PID==` or `--PID--` prefixes. XML and other Valgrind tools are outside the supported scope.
 - Maximum file size: 5 MiB and 20,000 lines.
 - Stack clicks reveal log evidence, not files on your computer. Source upload and editor integration are not included.
 - Printed records are not runtime occurrences. Memcheck can suppress repeated errors; the app uses `ERROR SUMMARY` for the total and does not interpret detailed `-s` repetition counts.
@@ -91,7 +109,7 @@ Import this GitHub repository, select **Other** as the framework, and use `dist`
 
 ## Privacy and implementation
 
-Files are read through the browser File API. Parsing and rendering run locally. The example is a static asset fetched from the host. User-provided strings are rendered with `textContent`; no log contents are interpreted as HTML. Optional browser WebMCP tools expose the same local analysis action and concise report read-back when supported.
+Files are read through the browser File API. Parsing and rendering run locally. The examples and fonts are static assets fetched from the same host. Comparison uses the same File API and parser; neither file is uploaded, persisted, or added to any network request. User-provided strings are rendered with `textContent`; no log contents are interpreted as HTML. Optional browser WebMCP tools expose the same local analysis action and concise report read-back when supported.
 
 ## License
 

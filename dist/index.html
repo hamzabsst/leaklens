@@ -7,6 +7,8 @@
   <meta name="description" content="A clearer look at memory. Read Valgrind logs as grouped issues, trace the evidence, and find your next fix. Your logs stay in your browser.">
   <title>LeakLens — a clearer look at memory</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%231e2931'/%3E%3Cpath d='M9 8v16h7M19 8v16h6' fill='none' stroke='%23f4f2ed' stroke-width='3'/%3E%3C/svg%3E">
+  <link rel="preload" href="assets/fonts/Geist.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/GeistMono.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
   <script type="module" src="js/app.js"></script>
 </head>
@@ -59,6 +61,22 @@
       </section>
       <div id="empty-state" class="empty-state"><span class="eyebrow">YOUR WORKSPACE IS READY</span><h3>The next fix starts with a log.</h3><p>Open a Memcheck text log above, or choose Load example to see three real memory issues.</p></div>
       <div id="report-content" hidden>
+        <div class="comparison-tools">
+          <label class="quiet-button compare-upload" id="compare-dropzone" for="compare-file">Compare with another log<input id="compare-file" type="file" accept=".log,.txt,text/plain" class="file-input" aria-describedby="comparison-help"></label>
+          <button class="quiet-button" id="compare-example" hidden>Compare example runs</button>
+          <button class="quiet-button" id="clear-comparison" hidden>Clear comparison</button>
+        </div>
+        <p id="comparison-help" class="comparison-help">Select or drop a second .log / .txt file on the compare button. Current report = before.</p>
+        <p id="comparison-message" class="comparison-help" role="status" aria-live="polite"></p>
+        <section id="comparison-view" aria-labelledby="comparison-title" hidden>
+          <h3 id="comparison-title">Compare runs</h3>
+          <p id="comparison-names" class="comparison-help mono"></p>
+          <div id="comparison-summary" class="comparison-summary" aria-label="Before and after summary"></div>
+          <p class="comparison-help">Invalid reads + writes counts printed detail records, not runtime occurrences. Groups show presence in these logs; incomplete logs can omit issues. “Still leaking” includes all matching error kinds.</p>
+          <div id="comparison-warnings" class="warnings" hidden></div>
+          <div id="comparison-groups"></div>
+        </section>
+        <div id="single-run-report">
         <section class="stats" aria-label="Report summary">
           <div class="stat"><span>Grouped issues</span><strong id="stat-groups">—</strong><small id="stat-records">—</small></div>
           <div class="stat"><span>Valgrind errors</span><strong id="stat-errors">—</strong><small>From ERROR SUMMARY</small></div>
@@ -78,6 +96,7 @@
           <article id="issue-detail" class="issue-detail" aria-live="polite"></article>
         </section>
         <p class="report-foot">Log records are printed entries, not runtime occurrence counts. Valgrind may suppress repeats; its summary provides the total.</p>
+        </div>
       </div>
       <section id="raw-section" class="raw-section" hidden>
         <details id="raw-details"><summary>Original evidence <span id="raw-line-count" class="muted"></span><span class="disclosure-icon" aria-hidden="true">+</span></summary><div id="raw-log" class="raw-log" tabindex="0" aria-label="Original log with line numbers"></div></details>
@@ -89,7 +108,7 @@
       <div><p class="eyebrow">03 / BRING YOUR OWN BUG</p><h2 id="run-title">One command.<br>A fresh perspective.</h2><p>Compile with <code>-g</code>, run Memcheck,<br>then open your report here.</p></div>
       <div class="command-card"><div class="command-card-top"><span class="mono">TERMINAL</span><button class="quiet-button" id="copy-command">Copy command</button></div><code>valgrind --leak-check=full<br>  --show-leak-kinds=all<br>  --track-origins=yes<br>  --log-file=report.log ./app</code></div>
     </section>
-    <footer class="page-footer"><a class="brand footer-brand" href="#hero-title">leaklens<span class="brand-star" aria-hidden="true">°</span></a><span>Built by Hamza Boussetta · v0.2</span><a href="https://github.com/hamzabsst/leaklens" target="_blank" rel="noopener noreferrer">Source & documentation</a></footer>
+    <footer class="page-footer"><a class="brand footer-brand" href="#hero-title">leaklens<span class="brand-star" aria-hidden="true">°</span></a><span>Built by Hamza Boussetta · v0.3</span><a href="https://github.com/hamzabsst/leaklens" target="_blank" rel="noopener noreferrer">Source & documentation</a></footer>
   </div>
 </body>
 </html>

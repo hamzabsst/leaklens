@@ -1,5 +1,20 @@
 # Validation
 
+## v0.3 Geist and run comparison
+
+Checked on 5 October 2026:
+
+- 20 parser tests and 13 signature/diff tests passed. Static build validation passed (JavaScript syntax, imports, asset references, and font file signatures).
+- Geist and Geist Mono 400/500/600 loaded successfully; UI arrow, minus, degree sign, accents, braces, and numeric glyphs were checked. Fonts are same-origin WOFF2 assets with preloads and optional loading; fallback metrics were calculated from the fonts.
+- Temporary local font diagnostics measured CLS 0 on cached and fresh-font requests. Those diagnostics were removed before publishing. This is evidence for the checked browser, not a guarantee for every device/network condition.
+- Example comparison: 2 Fixed, 1 New, 1 Still leaking; definitely lost 64 B → 32 B (−32 B), and printed invalid read/write records 2 → 1 (−1).
+- Selected second-file analysis produced the same diff and preserved the before report. Non-Valgrind text, files over 5 MiB, and files over 20,000 lines showed friendly errors without discarding the report or previous comparison.
+- Keyboard expansion displayed both stacks. Clear comparison restored the normal before report and moved focus to the comparison input.
+- Normal Open a log / Open another log and Or explore the example flows remained working.
+- 320px and 390px comparison layouts and expanded stacks showed no horizontal overflow; the narrow hero title was checked for clipping. Temporary viewport settings were reset.
+- No application console errors were observed (an unrelated installed browser extension reported an error during a later check). Local request inspection showed only same-origin static assets/example fetches; selecting user log files caused no network request.
+
+
 ## Wider layout and system typography
 
 Checked on 5 October 2026:

@@ -1,10 +1,12 @@
 import { parseLog, ISSUE_INFO, leakTotal } from './parser.js';
+import { compareReports, validateLogSize, MAX_LOG_BYTES } from './compare.js';
 
 const $ = (id) => document.getElementById(id);
-const LIMIT = 5 * 1024 * 1024;
+const LIMIT = MAX_LOG_BYTES;
 let report = null;
 let activeGroup = null;
 let renderRequest = 0;
+let comparisonRequest = 0;
 const fmt = new Intl.NumberFormat('en-US');
 const bytes = (value) => value === null ? 'Unknown' : `${fmt.format(value)} B`;
 const node = (tag, className, text) => {
@@ -17,10 +19,12 @@ const colors = { definite: '#edb698', indirect: '#c4b6aa', possible: '#dbcb9b', 
 
 function notice(message) { $('notice').textContent = message; }
 function openReport(text, name, example = false) {
-  if (typeof text !== 'string' || new TextEncoder().encode(text).length > LIMIT) throw new Error('Choose a text log smaller than 5 MiB.');
+  validateLogSize(text);
   // Parse before committing state so a rejected file cannot erase a valid report.
   const next = parseLog(text);
   report = next;
+  clearComparison();
+  $('compare-example').hidden = !example;
   $('report-name').textContent = name;
   $('report-command').textContent = next.processes.map(p => p.command || `Process ${p.pid}`).join(' · ');
   $('report-badge').textContent = example ? 'Example report' : 'Local file';
@@ -41,6 +45,123 @@ function openReport(text, name, example = false) {
   renderIssues(next);
   notice(example ? 'Example report loaded.' : 'Analysis complete. Your file stays in this browser tab.');
   return { groups: next.groups.length, records: next.recordCount, errors: next.errorCount, warnings: next.warnings };
+}
+
+function clearComparison() {
+  comparisonRequest++;
+  $('comparison-view').hidden = true;
+  $('comparison-groups').replaceChildren();
+  $('comparison-summary').replaceChildren();
+  $('comparison-names').textContent = '';
+  $('comparison-message').textContent = '';
+  $('single-run-report').hidden = false;
+  $('raw-section').hidden = !report;
+  $('clear-comparison').hidden = true;
+}
+
+function comparisonStack(issue, side) {
+  const section = node('div', 'comparison-stack');
+  const records = issue.issues.reduce((sum, group) => sum + group.recordCount, 0);
+  section.append(node('p', 'eyebrow', `${side} · ${records} detail record${records === 1 ? '' : 's'}`));
+  // Show the complete primary stack even though matching uses at most five
+  // application frames. Each merged parser group keeps its own evidence.
+  for (const group of issue.issues) {
+    const stack = node('ol', 'stack comparison-frames');
+    for (const frame of group.frames) {
+      const row = node('li', 'stack-frame');
+      const content = node('span', 'frame-content');
+      content.append(node('span', 'frame-function', frame.function), node('span', 'frame-location', frame.file ? `${frame.file}:${frame.sourceLine}` : frame.description));
+      row.append(content); stack.append(row);
+    }
+    if (!group.frames.length) stack.append(node('li', 'comparison-help', 'No stack trace available in this record.'));
+    section.append(stack);
+  }
+  return section;
+}
+
+function renderComparison(after, afterName) {
+  const diff = compareReports(report, after);
+  $('comparison-names').textContent = `${$('report-name').textContent} (before) → ${afterName} (after)`;
+  $('comparison-summary').replaceChildren();
+  for (const metric of diff.metrics) {
+    const card = node('div', 'comparison-metric');
+    const label = metric.kind === 'access' ? 'Invalid reads + writes' : ISSUE_INFO[metric.kind].label;
+    const format = metric.kind === 'access' ? value => value === null ? 'Unknown' : fmt.format(value) : bytes;
+    const change = metric.delta === null ? 'Delta unknown' : metric.delta === 0 ? 'No change' : `${metric.delta < 0 ? '−' : '+'}${format(Math.abs(metric.delta))} · ${metric.delta < 0 ? 'lower' : 'higher'}`;
+    card.append(node('span', 'comparison-label', label), node('strong', '', `${format(metric.before)} → ${format(metric.after)}`), node('span', `comparison-delta ${metric.delta < 0 ? 'lower' : metric.delta > 0 ? 'higher' : ''}`, change));
+    $('comparison-summary').append(card);
+  }
+  $('comparison-warnings').replaceChildren(...diff.warnings.map(w => node('p', '', w)));
+  $('comparison-warnings').hidden = !diff.warnings.length;
+  $('comparison-groups').replaceChildren();
+  for (const [label, items] of [['Fixed', diff.fixed], ['New', diff.added], ['Still leaking', diff.persistent]]) {
+    const section = node('section', 'comparison-group');
+    const heading = node('h4', '', label); heading.append(node('span', 'count', String(items.length))); section.append(heading);
+    if (!items.length) section.append(node('p', 'comparison-help', 'No issues in this group.'));
+    for (const item of items) {
+      const issue = item.after || item.before;
+      const details = node('details', 'comparison-item');
+      const summary = node('summary');
+      const title = node('span', 'comparison-item-title');
+      const frame = issue.frames[0];
+      title.append(node('strong', '', ISSUE_INFO[issue.kind].label), node('span', 'location', frame ? `${frame.function}${frame.file ? ` · ${frame.file}:${frame.sourceLine}` : ''}` : 'No stack trace available'));
+      summary.append(title, node('span', 'disclosure-icon', '+'));
+      summary.lastChild.setAttribute('aria-hidden', 'true');
+      details.append(summary);
+      const stacks = node('div', 'comparison-stacks');
+      if (item.before) stacks.append(comparisonStack(item.before, 'Before'));
+      if (item.after) stacks.append(comparisonStack(item.after, 'After'));
+      details.append(stacks); section.append(details);
+    }
+    $('comparison-groups').append(section);
+  }
+  $('single-run-report').hidden = true;
+  $('raw-section').hidden = true;
+  $('comparison-view').hidden = false;
+  $('clear-comparison').hidden = false;
+  $('comparison-message').textContent = 'Comparison ready. Both logs stay in this browser tab.';
+  $('report-content').scrollIntoView({ block: 'start', behavior: 'auto' });
+}
+
+async function readComparison(file) {
+  if (!file || !report) return;
+  notice('');
+  const request = ++comparisonRequest;
+  const base = report, baseRequest = renderRequest;
+  $('clear-comparison').hidden = false;
+  try {
+    if (!/\.(log|txt)$/i.test(file.name)) throw new Error('Choose a .log or .txt Memcheck report.');
+    if (file.size > LIMIT) throw new Error('This file is too large. Choose a text log no larger than 5 MiB.');
+    $('comparison-message').textContent = 'Reading the second log locally…';
+    const text = await file.text();
+    if (request !== comparisonRequest || base !== report || baseRequest !== renderRequest) return;
+    validateLogSize(text);
+    const after = parseLog(text);
+    renderComparison(after, file.name);
+  } catch (error) {
+    if (request === comparisonRequest && base === report && baseRequest === renderRequest) {
+      $('comparison-message').textContent = `We couldn’t compare that file. ${error.message} Your first report is unchanged.`;
+    }
+  }
+}
+
+async function compareExample() {
+  if (!report) return;
+  notice('');
+  const request = ++comparisonRequest;
+  const base = report, baseRequest = renderRequest;
+  $('clear-comparison').hidden = false;
+  try {
+    $('comparison-message').textContent = 'Loading the after example…';
+    const response = await fetch('examples/demo-after.log');
+    if (!response.ok) throw new Error('The example could not be loaded. Try a second log file.');
+    const text = await response.text();
+    if (request !== comparisonRequest || base !== report || baseRequest !== renderRequest) return;
+    validateLogSize(text);
+    renderComparison(parseLog(text), 'demo-after.log · synthetic example');
+  } catch (error) {
+    if (request === comparisonRequest && base === report && baseRequest === renderRequest) $('comparison-message').textContent = error.message;
+  }
 }
 
 function renderMemory(next) {
@@ -198,6 +319,12 @@ void loadDemo();
 $('log-file').addEventListener('change', (event) => { void readFile(event.target.files[0]); event.target.value = ''; });
 $('demo-button').addEventListener('click', loadDemo);
 $('empty-demo').addEventListener('click', loadDemo);
+$('compare-file').addEventListener('change', event => { void readComparison(event.target.files[0]); event.target.value = ''; });
+$('compare-example').addEventListener('click', compareExample);
+$('clear-comparison').addEventListener('click', () => { clearComparison(); $('compare-file').focus(); });
+for (const eventName of ['dragenter', 'dragover']) $('compare-dropzone').addEventListener(eventName, event => { event.preventDefault(); $('compare-dropzone').classList.add('dragging'); });
+for (const eventName of ['dragleave', 'drop']) $('compare-dropzone').addEventListener(eventName, event => { event.preventDefault(); $('compare-dropzone').classList.remove('dragging'); });
+$('compare-dropzone').addEventListener('drop', event => { void readComparison(event.dataTransfer.files[0]); });
 for (const eventName of ['dragenter', 'dragover']) $('dropzone').addEventListener(eventName, event => { event.preventDefault(); $('dropzone').classList.add('dragging'); });
 for (const eventName of ['dragleave', 'drop']) $('dropzone').addEventListener(eventName, event => { event.preventDefault(); $('dropzone').classList.remove('dragging'); });
 $('dropzone').addEventListener('drop', event => { void readFile(event.dataTransfer.files[0]); });

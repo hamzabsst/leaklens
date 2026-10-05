@@ -2,7 +2,9 @@
 
 The supplied visual reference uses charcoal product panels, fine ivory outlines, large typography, and a softly lit metallic object. LeakLens adapts that direction into an actual developer tool: a framed introduction with immediate file access, followed by a working analyzer and a compact command reference.
 
-The interface uses an Apple-first system font stack: San Francisco on Apple devices and the native system font elsewhere. The wider canvas places the complete LeakLens title in its own row above the memory sculpture.
+The interface self-hosts Geist for UI and headings at weights 400/500/600, and Geist Mono for code, stack traces, labels, and numbers. Two variable WOFF2 files from the official `geist` npm package (1.7.2) are preloaded from the same origin. `font-display: optional` prevents late font swaps on slow connections; system fallbacks remain usable. Local Arial/Liberation Sans and Courier New/Liberation Mono fallbacks use width-calibrated size adjustment and Geist ascent/descent overrides. The narrow hero title adapts its font size to keep the complete word visible. No existing layout, section spacing, or colors were changed for the typography update.
+
+Font source: [Vercel Geist](https://github.com/vercel/geist-font), SIL Open Font License; the original license is included in `dist/assets/fonts/LICENSE.txt`. The font files together are approximately 141 kB. The wider canvas places the complete LeakLens title in its own row above the memory sculpture.
 
 The sample report loads automatically and is explicitly marked as an example. Opening a log or choosing the example moves the user to the analysis. System feedback stays visible when the analyzer is in view. Reduced-motion preferences disable the introductory image animation and smooth scrolling.
 

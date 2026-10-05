@@ -1,0 +1,23 @@
+==73== Memcheck, a memory error detector
+==73== Command: ./demo-after
+==73==
+==73== Invalid read of size 8
+==73==    at 0x209500: inspect_buffer (buffer.c:42)
+==73==    by 0x209600: main (demo.c:39)
+==73==
+==73== HEAP SUMMARY:
+==73==     in use at exit: 32 bytes in 1 blocks
+==73==   total heap usage: 4 allocs, 3 frees, 4,144 bytes allocated
+==73==
+==73== 32 bytes in 1 blocks are definitely lost in loss record 1 of 1
+==73==    at 0x5846828: malloc (in /usr/libexec/valgrind/vgpreload_memcheck-amd64-linux.so)
+==73==    by 0x209256: lose_allocation (demo.c:26)
+==73==    by 0x20929C: main (demo.c:37)
+==73==
+==73== LEAK SUMMARY:
+==73==    definitely lost: 32 bytes in 1 blocks
+==73==    indirectly lost: 0 bytes in 0 blocks
+==73==      possibly lost: 0 bytes in 0 blocks
+==73==    still reachable: 0 bytes in 0 blocks
+==73==         suppressed: 0 bytes in 0 blocks
+==73== ERROR SUMMARY: 2 errors from 2 contexts (suppressed: 0 from 0)

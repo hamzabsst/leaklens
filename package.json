@@ -1,10 +1,11 @@
 {
   "name": "leaklens",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "A local-first visual reader for Valgrind Memcheck text logs.",
   "scripts": {
+    "build": "node scripts/check-build.js",
     "test": "node --test tests/*.test.js",
     "start": "python3 -m http.server 4173 --directory dist --bind 127.0.0.1"
   }

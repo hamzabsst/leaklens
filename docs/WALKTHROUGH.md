@@ -62,3 +62,12 @@ Fix only the invalid write: change `numbers[3]` to a valid index. Recompile the 
 Expected result: the invalid-write issue disappears; the invalid-read issue and 64-byte leak remain. Then fix those separately and verify the report after each change.
 
 Before adding features, explain out loud why grouping ignores addresses, why unknown is different from zero, and why a source stack points to evidence rather than an automatic fix. Those are useful decisions to discuss in an interview.
+
+
+## Compare two runs
+
+Use **Compare example runs** in the report to see the synthetic after example. Expand Fixed, New, or Still leaking items with Enter/Space to inspect stacks. Clear comparison returns to the same before report. Try opening your own second log; both files are read locally.
+
+`dist/js/compare.js` takes two existing parser results. It builds a stable signature from the error kind and the first five application frames, combines matching signatures across PIDs, and computes set differences. Summary bytes come from `leakTotal`, not from adding detailed allocations. Access counts use printed invalid-read/write records because Memcheck's ERROR SUMMARY also includes other error kinds. Missing summaries produce unknown deltas.
+
+`dist/js/app.js` handles file selection/drop, rejects files over 5 MiB before reading, and passes the text to the existing parser (which enforces 20,000 lines). Request counters discard stale results if a new before log is opened or the comparison is cleared. Invalid second files leave the first report and any previous comparison intact.
